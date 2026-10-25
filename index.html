@@ -439,7 +439,7 @@ a {
       <p id="subtitle">Ask about the ministry. Answers are drawn from the official CareerPro knowledge-base document.</p>
     </div>
 
-    <!-- Ministry knowledge-base chatbot -->
+    <!-- Ministry Q&A chatbot -->
     <div id="chatview">
       <div id="messages">
         <div class="bubble bot">Welcome to CareerPro Ministry, The Elevation Church, Ogba! 👋🏽 Ask me about our activities, mentorship, business support, Enterprise Development Fund, prayer requests or other information in the ministry guide.</div>
@@ -450,7 +450,7 @@ a {
         <button class="primary" id="send" type="submit">Send</button>
       </form>
 
-      <div class="small">Ministry Q&amp;A uses the supplied knowledge-base document. If the document does not contain an answer, the chatbot will say so.</div>
+      <div class="small">Ask about CareerPro Ministry activities, mentorship, business support, the Enterprise Development Fund, prayer requests and more.</div>
     </div>
 
     <!-- Job search -->
@@ -474,7 +474,7 @@ a {
     <!-- Career and business coach -->
     <div class="coachbox" id="coachview">
       <div class="coachnote">
-        <strong>Need advice beyond the CareerPro ministry guide?</strong><br>
+        <strong>Need practical career or business advice?</strong><br>
         Ask a career or business question below. We’ll prepare it for ChatGPT, where you can explore practical next steps, ideas and options.
       </div>
 
@@ -565,7 +565,7 @@ document.querySelectorAll('.nav').forEach(button => {
     if (view === 'ask') {
       document.getElementById('title').textContent = 'Ask CareerPro';
       subtitle.textContent =
-        'Answers are drawn from the official CareerPro knowledge-base document.';
+        'Ask about the ministry. Answers are drawn from the official CareerPro knowledge-base document.';
       chatview.style.display = 'flex';
       return;
     }
@@ -581,7 +581,7 @@ document.querySelectorAll('.nav').forEach(button => {
     if (view === 'coach') {
       document.getElementById('title').textContent = 'Career & Business Coach';
       subtitle.textContent =
-        'Explore career and business questions beyond the ministry knowledge base.';
+        'Get practical guidance for career and business questions.';
       coachview.classList.add('active');
       return;
     }
@@ -596,19 +596,19 @@ document.querySelectorAll('.nav').forEach(button => {
 
     const content = {
       activities:
-        'CareerPro activities listed in the knowledge base include Marketplace Power Hour, Marketplace Conquerors Forum, quarterly Marketplace Masterclasses, Marketplace Testimony Series, Mentorship Circles, prayer covering, career development sessions and job/business opportunities.',
+        'CareerPro activities include Marketplace Power Hour, Marketplace Conquerors Forum, quarterly Marketplace Masterclasses, Marketplace Testimony Series, Mentorship Circles, prayer covering, career development sessions and job/business opportunities.',
 
       business:
         'CareerPro supports entrepreneurs through business-focused masterclasses, mentorship, prayer and spiritual covering, business opportunities, grant/funding information, entrepreneurship resources, networking and business testimonies.',
 
       fund:
-        'The knowledge base says the planned 2027 Enterprise Development Fund is ₦20 million for 10 businesses, ₦2 million each. Registration information is expected when the application process opens in January 2027. Eligibility, permitted uses and selection criteria are to be announced. Beware of anyone requesting payment to secure a place.',
+        'The planned 2027 Enterprise Development Fund is ₦20 million for 10 businesses, with ₦2 million allocated to each. Registration information is expected when applications open in January 2027. Eligibility, permitted uses and selection criteria will be announced. Beware of anyone requesting payment to secure a place.',
 
       mentor:
-        'The knowledge base says the next Marketplace Mentorship Circle starts in January 2027, with registration expected to open in December 2026. Registration details are to be shared by CareerPro Ministry.',
+        'The next Marketplace Mentorship Circle is planned to start in January 2027, with registration expected to open in December 2026. Registration details will be shared by CareerPro Ministry.',
 
       prayer:
-        'Submit a prayer request through the Prayer & Testimony Form. Personal information is not compulsory, according to the knowledge base.',
+        'Submit a prayer request through the Prayer & Testimony Form.',
 
       testimony:
         'Share career or business testimonies through the Prayer & Testimony Form.',
@@ -625,7 +625,7 @@ document.querySelectorAll('.nav').forEach(button => {
     messages.innerHTML = '';
 
     bubble(content[view] ||
-      'For information not covered here, please confirm with the CareerPro Ministry team.');
+      'For further information, please contact the CareerPro Ministry team.');
 
     if (view === 'prayer' || view === 'testimony' || view === 'community') {
       const d = document.createElement('div');
@@ -648,7 +648,7 @@ document.querySelectorAll('.nav').forEach(button => {
   });
 });
 
-// Ask CareerPro: query the existing backend knowledge base
+// Ask CareerPro: query the existing backend
 askform.addEventListener('submit', async event => {
   event.preventDefault();
 
@@ -658,7 +658,7 @@ askform.addEventListener('submit', async event => {
   bubble(q, 'user');
   document.getElementById('question').value = '';
 
-  const wait = bubble('Searching the CareerPro knowledge base…');
+  const wait = bubble('Preparing your answer…');
   document.getElementById('send').disabled = true;
 
   try {
@@ -678,7 +678,7 @@ askform.addEventListener('submit', async event => {
     }
   } catch (error) {
     wait.textContent =
-      'I could not connect to the knowledge base. Please try again.';
+      'I could not retrieve an answer just now. Please try again.';
   } finally {
     document.getElementById('send').disabled = false;
   }
