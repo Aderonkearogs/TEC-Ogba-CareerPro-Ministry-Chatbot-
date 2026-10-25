@@ -1,78 +1,582 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>CareerPro Ministry | The Elevation Church, Ogba</title>
+
 <style>
-:root{--navy:#13284a;--blue:#2458a6;--gold:#e3b44b;--bg:#f4f7fb;--ink:#1e293b;--muted:#667085}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
-header{background:linear-gradient(120deg,#122544,#2458a6);color:white;padding:28px 18px}
-.wrap{max-width:1060px;margin:auto}header .eyebrow{color:#f4cf76;font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
-h1{margin:8px 0;font-size:clamp(25px,4vw,38px)}header p{margin:0;color:#e2eaf7}
-main{max-width:1060px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:250px 1fr;gap:18px}
-aside,.panel{background:white;border:1px solid #e3e8f0;border-radius:18px;box-shadow:0 6px 24px #13284a0a}
-aside{padding:16px;height:max-content}aside h3{margin:3px 8px 12px;font-size:14px;color:var(--muted)}
-.nav{display:block;width:100%;text-align:left;border:0;background:white;padding:12px;border-radius:10px;color:var(--ink);cursor:pointer;font-weight:650;margin:3px 0}
-.nav:hover,.nav.active{background:#edf3ff;color:var(--blue)}.panel{overflow:hidden;min-height:600px;display:flex;flex-direction:column}
-.panelhead{padding:20px 22px;border-bottom:1px solid #edf0f5}.panelhead h2{margin:0 0 5px;font-size:21px}.panelhead p{margin:0;color:var(--muted);font-size:14px}
-#messages{padding:22px;display:flex;flex-direction:column;gap:14px;flex:1;min-height:320px}
-.bubble{white-space:pre-wrap;line-height:1.55;padding:14px 16px;border-radius:14px;max-width:95%;font-size:14px}
-.bot{background:#f0f4fb;align-self:flex-start}.user{background:#2458a6;color:white;align-self:flex-end}
-form{padding:16px 20px;border-top:1px solid #edf0f5;display:flex;gap:10px}textarea{resize:vertical;min-height:48px;max-height:150px;flex:1;border:1px solid #d5dce8;border-radius:12px;padding:13px;font:inherit}button.primary{border:0;background:var(--blue);color:white;padding:0 18px;border-radius:12px;font-weight:750;cursor:pointer}button:disabled{opacity:.6}
-a{color:#2458a6;overflow-wrap:anywhere}.small{font-size:12px;color:var(--muted);padding:0 20px 16px}
-.jobbox{padding:22px;display:none}.jobbox.active{display:block}.jobbox input,.jobbox select{width:100%;padding:12px;border:1px solid #d5dce8;border-radius:10px;margin:8px 0 12px;font:inherit}.jobbox button{padding:12px 16px}.jobnote{background:#fff8e7;border:1px solid #f3dfa6;padding:12px;border-radius:10px;font-size:13px}
-.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.links a{display:inline-block;padding:10px 12px;background:#edf3ff;border-radius:9px;text-decoration:none;font-weight:650}
-@media(max-width:720px){main{grid-template-columns:1fr}aside{display:flex;overflow:auto;gap:5px;padding:10px}aside h3{display:none}.nav{white-space:nowrap;width:auto}.panel{min-height:560px}form{padding:12px}button.primary{padding:0 12px}}
-</style></head>
+:root {
+  --navy: #13284a;
+  --blue: #2458a6;
+  --gold: #e3b44b;
+  --bg: #f4f7fb;
+  --ink: #1e293b;
+  --muted: #667085;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+  color: var(--ink);
+}
+
+header {
+  background: linear-gradient(120deg, #122544, #2458a6);
+  color: white;
+  padding: 28px 18px;
+}
+
+.wrap {
+  max-width: 1060px;
+  margin: auto;
+}
+
+/* Header layout: text left, church logo right */
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+header .eyebrow {
+  color: #f4cf76;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: clamp(25px, 4vw, 38px);
+}
+
+header p {
+  margin: 0;
+  color: #e2eaf7;
+}
+
+/* Elevation Church logo */
+.church-logo {
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 6px;
+}
+
+/* Main page layout */
+main {
+  max-width: 1060px;
+  margin: 24px auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 18px;
+}
+
+aside,
+.panel {
+  background: white;
+  border: 1px solid #e3e8f0;
+  border-radius: 18px;
+  box-shadow: 0 6px 24px #13284a0a;
+}
+
+aside {
+  padding: 16px;
+  height: max-content;
+}
+
+aside h3 {
+  margin: 3px 8px 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.nav {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 650;
+  margin: 3px 0;
+}
+
+.nav:hover,
+.nav.active {
+  background: #edf3ff;
+  color: var(--blue);
+}
+
+.panel {
+  overflow: hidden;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelhead {
+  padding: 20px 22px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.panelhead h2 {
+  margin: 0 0 5px;
+  font-size: 21px;
+}
+
+.panelhead p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+#chatview {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+#messages {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 320px;
+  overflow-y: auto;
+}
+
+.bubble {
+  white-space: pre-wrap;
+  line-height: 1.55;
+  padding: 14px 16px;
+  border-radius: 14px;
+  max-width: 95%;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.bot {
+  background: #f0f4fb;
+  align-self: flex-start;
+}
+
+.user {
+  background: #2458a6;
+  color: white;
+  align-self: flex-end;
+}
+
+form {
+  padding: 16px 20px;
+  border-top: 1px solid #edf0f5;
+  display: flex;
+  gap: 10px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 48px;
+  max-height: 150px;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #d5dce8;
+  border-radius: 12px;
+  padding: 13px;
+  font: inherit;
+}
+
+button.primary {
+  border: 0;
+  background: var(--blue);
+  color: white;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+a {
+  color: #2458a6;
+  overflow-wrap: anywhere;
+}
+
+.small {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 20px 16px;
+}
+
+.jobbox {
+  padding: 22px;
+  display: none;
+}
+
+.jobbox.active {
+  display: block;
+}
+
+.jobbox input,
+.jobbox select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5dce8;
+  border-radius: 10px;
+  margin: 8px 0 12px;
+  font: inherit;
+}
+
+.jobbox button {
+  padding: 12px 16px;
+}
+
+.jobnote {
+  background: #fff8e7;
+  border: 1px solid #f3dfa6;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.links a {
+  display: inline-block;
+  padding: 10px 12px;
+  background: #edf3ff;
+  border-radius: 9px;
+  text-decoration: none;
+  font-weight: 650;
+}
+
+/* Mobile and tablet adjustments */
+@media (max-width: 720px) {
+  header {
+    padding: 22px 16px;
+  }
+
+  .header-content {
+    gap: 12px;
+  }
+
+  .church-logo {
+    width: 76px;
+    height: 76px;
+  }
+
+  header .eyebrow {
+    font-size: 10px;
+    letter-spacing: .08em;
+  }
+
+  h1 {
+    font-size: clamp(22px, 5vw, 30px);
+  }
+
+  header p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  aside {
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+    padding: 10px;
+  }
+
+  aside h3 {
+    display: none;
+  }
+
+  .nav {
+    white-space: nowrap;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .panel {
+    min-height: 560px;
+  }
+
+  form {
+    padding: 12px;
+  }
+
+  button.primary {
+    padding: 0 12px;
+  }
+}
+
+/* Very narrow phone screens */
+@media (max-width: 380px) {
+  .church-logo {
+    width: 60px;
+    height: 60px;
+    padding: 4px;
+  }
+
+  .header-content {
+    gap: 8px;
+  }
+
+  header p {
+    font-size: 12px;
+  }
+}
+</style>
+</head>
+
 <body>
-<header><div class="wrap"><div class="eyebrow">The Elevation Church · Ogba</div><h1>CareerPro Ministry</h1><p>Faith, excellence and kingdom impact in your career and business.</p></div></header>
+
+<header>
+  <div class="wrap header-content">
+
+    <div class="header-text">
+      <div class="eyebrow">The Elevation Church · Ogba</div>
+      <h1>CareerPro Ministry</h1>
+      <p>Faith, excellence and kingdom impact in your career and business.</p>
+    </div>
+
+    <img
+      src="/static/elevation-church-logo.png"
+      alt="The Elevation Church logo"
+      class="church-logo"
+      onerror="this.style.display='none'"
+    >
+
+  </div>
+</header>
+
 <main>
-<aside><h3>CAREERPRO MENU</h3>
-<button class="nav active" data-view="ask">💬 Ask CareerPro</button>
-<button class="nav" data-view="jobs">🔎 Find a Job</button>
-<button class="nav" data-view="activities">📅 Ministry Activities</button>
-<button class="nav" data-view="business">💼 Business Support</button>
-<button class="nav" data-view="fund">🌱 Enterprise Fund</button>
-<button class="nav" data-view="mentor">🤝 Mentorship</button>
-<button class="nav" data-view="prayer">🙏 Prayer Request</button>
-<button class="nav" data-view="testimony">✨ Share a Testimony</button>
-<button class="nav" data-view="community">💚 WhatsApp Community</button>
-</aside>
-<section class="panel">
-<div class="panelhead"><h2 id="title">Ask CareerPro</h2><p id="subtitle">Ask about the ministry. Answers are drawn from the official CareerPro knowledge-base document.</p></div>
-<div id="chatview"><div id="messages"><div class="bubble bot">Welcome to CareerPro Ministry, The Elevation Church, Ogba! 👋🏽 Ask me about our activities, mentorship, business support, Enterprise Development Fund, prayer requests or other information in the ministry guide.</div></div>
-<form id="askform"><textarea id="question" placeholder="Type your CareerPro question…" required></textarea><button class="primary" id="send">Send</button></form><div class="small">Ministry Q&A uses the supplied knowledge-base document. If the document does not contain an answer, the chatbot will say so.</div></div>
-<div class="jobbox" id="jobview"><div class="jobnote">Job search is separate from ministry Q&A. Use the ChatGPT search link below to find current listings; confirm every vacancy on the employer’s official careers page before applying.</div><label for="jobq">Job title, industry and location</label><input id="jobq" placeholder="e.g. Data Analyst, Lagos, hybrid"><button class="primary" id="jobsearch">Search current jobs</button><div id="jobresults" style="margin-top:18px"></div><p><a id="chatgptlink" target="_blank" rel="noopener">Open ChatGPT job search ↗</a></p></div>
-</section>
+
+  <aside>
+    <h3>CAREERPRO MENU</h3>
+
+    <button class="nav active" data-view="ask">💬 Ask CareerPro</button>
+    <button class="nav" data-view="jobs">🔎 Find a Job</button>
+    <button class="nav" data-view="activities">📅 Ministry Activities</button>
+    <button class="nav" data-view="business">💼 Business Support</button>
+    <button class="nav" data-view="fund">🌱 Enterprise Fund</button>
+    <button class="nav" data-view="mentor">🤝 Mentorship</button>
+    <button class="nav" data-view="prayer">🙏 Prayer Request</button>
+    <button class="nav" data-view="testimony">✨ Share a Testimony</button>
+    <button class="nav" data-view="community">💚 WhatsApp Community</button>
+  </aside>
+
+  <section class="panel">
+
+    <div class="panelhead">
+      <h2 id="title">Ask CareerPro</h2>
+      <p id="subtitle">Ask about the ministry. Answers are drawn from the official CareerPro knowledge-base document.</p>
+    </div>
+
+    <div id="chatview">
+
+      <div id="messages">
+        <div class="bubble bot">Welcome to CareerPro Ministry, The Elevation Church, Ogba! 👋🏽 Ask me about our activities, mentorship, business support, Enterprise Development Fund, prayer requests or other information in the ministry guide.</div>
+      </div>
+
+      <form id="askform">
+        <textarea id="question" placeholder="Type your CareerPro question…" required></textarea>
+        <button class="primary" id="send">Send</button>
+      </form>
+
+      <div class="small">Ministry Q&amp;A uses the supplied knowledge-base document. If the document does not contain an answer, the chatbot will say so.</div>
+
+    </div>
+
+    <div class="jobbox" id="jobview">
+
+      <div class="jobnote">Job search is separate from ministry Q&amp;A. Use the ChatGPT search link below to find current listings; confirm every vacancy on the employer’s official careers page before applying.</div>
+
+      <label for="jobq">Job title, industry and location</label>
+      <input id="jobq" placeholder="e.g. Data Analyst, Lagos, hybrid">
+
+      <button class="primary" id="jobsearch">Search current jobs</button>
+
+      <div id="jobresults" style="margin-top:18px"></div>
+
+      <p><a id="chatgptlink" target="_blank" rel="noopener">Open ChatGPT job search ↗</a></p>
+
+    </div>
+
+  </section>
+
 </main>
+
 <script>
-const messages=document.getElementById('messages'), askform=document.getElementById('askform'), chatview=document.getElementById('chatview'), jobview=document.getElementById('jobview');
-function bubble(text,who='bot'){const d=document.createElement('div');d.className='bubble '+who;d.textContent=text;messages.appendChild(d);messages.scrollTop=messages.scrollHeight;return d}
-document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{
- document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');
- const v=b.dataset.view;document.getElementById('title').textContent=b.textContent.replace(/^[^A-Za-z]+/,'');
- chatview.style.display=v==='ask'?'flex':'none';jobview.classList.toggle('active',v==='jobs');
- chatview.style.flexDirection='column';
- if(v==='ask')document.getElementById('subtitle').textContent='Answers are drawn from the official CareerPro knowledge-base document.';
- else if(v==='jobs')document.getElementById('subtitle').textContent='Search for current vacancies. Verify each listing with the employer.';
- else {const content={
- activities:'CareerPro activities listed in the knowledge base include Marketplace Power Hour, Marketplace Conquerors Forum, quarterly Marketplace Masterclasses, Marketplace Testimony Series, Mentorship Circles, prayer covering, career development sessions and job/business opportunities.',
- business:'CareerPro supports entrepreneurs through business-focused masterclasses, mentorship, prayer and spiritual covering, business opportunities, grant/funding information, entrepreneurship resources, networking and business testimonies.',
- fund:'The knowledge base says the planned 2027 Enterprise Development Fund is ₦20 million for 10 businesses, ₦2 million each. Registration information is expected when the application process opens in January 2027. Eligibility, permitted uses and selection criteria are to be announced. Beware of anyone requesting payment to secure a place.',
- mentor:'The knowledge base says the next Marketplace Mentorship Circle starts in January 2027, with registration expected to open in December 2026. Registration details are to be shared by CareerPro Ministry.',
- prayer:'Submit a prayer request through the Prayer & Testimony Form. Personal information is not compulsory, according to the knowledge base.',
- testimony:'Share career or business testimonies through the Prayer & Testimony Form.',
- community:'Join the CareerPro Ministry WhatsApp community using the official link below.'
- }[v]||'For information not covered here, please confirm with the CareerPro Ministry team.';
- chatview.style.display='flex';jobview.classList.remove('active');messages.innerHTML='';bubble(content);
- if(v==='prayer'||v==='testimony'||v==='community'){const d=document.createElement('div');d.className='bubble bot';d.innerHTML='';const a=document.createElement('a');a.href=v==='community'?'https://chat.whatsapp.com/EDJSEtWBTYL3Y4gjAmQ8Ql?mode=gi_t':'https://forms.gle/sbx63TAHaeg1wo5y6';a.target='_blank';a.rel='noopener';a.textContent=v==='community'?'Join WhatsApp Community':'Open Prayer & Testimony Form';d.appendChild(a);messages.appendChild(d)}
- }
+const messages = document.getElementById('messages');
+const askform = document.getElementById('askform');
+const chatview = document.getElementById('chatview');
+const jobview = document.getElementById('jobview');
+
+function bubble(text, who = 'bot') {
+  const d = document.createElement('div');
+  d.className = 'bubble ' + who;
+  d.textContent = text;
+  messages.appendChild(d);
+  messages.scrollTop = messages.scrollHeight;
+  return d;
+}
+
+document.querySelectorAll('.nav').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.nav').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+
+  const v = b.dataset.view;
+
+  document.getElementById('title').textContent =
+    b.textContent.replace(/^[^A-Za-z]+/, '');
+
+  chatview.style.display = v === 'ask' ? 'flex' : 'none';
+  jobview.classList.toggle('active', v === 'jobs');
+
+  if (v === 'ask') {
+    document.getElementById('subtitle').textContent =
+      'Answers are drawn from the official CareerPro knowledge-base document.';
+  } else if (v === 'jobs') {
+    document.getElementById('subtitle').textContent =
+      'Search for current vacancies. Verify each listing with the employer.';
+  } else {
+    const content = {
+      activities: 'CareerPro activities listed in the knowledge base include Marketplace Power Hour, Marketplace Conquerors Forum, quarterly Marketplace Masterclasses, Marketplace Testimony Series, Mentorship Circles, prayer covering, career development sessions and job/business opportunities.',
+
+      business: 'CareerPro supports entrepreneurs through business-focused masterclasses, mentorship, prayer and spiritual covering, business opportunities, grant/funding information, entrepreneurship resources, networking and business testimonies.',
+
+      fund: 'The knowledge base says the planned 2027 Enterprise Development Fund is ₦20 million for 10 businesses, ₦2 million each. Registration information is expected when the application process opens in January 2027. Eligibility, permitted uses and selection criteria are to be announced. Beware of anyone requesting payment to secure a place.',
+
+      mentor: 'The knowledge base says the next Marketplace Mentorship Circle starts in January 2027, with registration expected to open in December 2026. Registration details are to be shared by CareerPro Ministry.',
+
+      prayer: 'Submit a prayer request through the Prayer & Testimony Form. Personal information is not compulsory, according to the knowledge base.',
+
+      testimony: 'Share career or business testimonies through the Prayer & Testimony Form.',
+
+      community: 'Join the CareerPro Ministry WhatsApp community using the official link below.'
+    }[v] || 'For information not covered here, please confirm with the CareerPro Ministry team.';
+
+    chatview.style.display = 'flex';
+    jobview.classList.remove('active');
+    messages.innerHTML = '';
+
+    bubble(content);
+
+    if (v === 'prayer' || v === 'testimony' || v === 'community') {
+      const d = document.createElement('div');
+      d.className = 'bubble bot';
+
+      const a = document.createElement('a');
+      a.href = v === 'community'
+        ? 'https://chat.whatsapp.com/EDJSEtWBTYL3Y4gjAmQ8Ql?mode=gi_t'
+        : 'https://forms.gle/sbx63TAHaeg1wo5y6';
+
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = v === 'community'
+        ? 'Join WhatsApp Community'
+        : 'Open Prayer & Testimony Form';
+
+      d.appendChild(a);
+      messages.appendChild(d);
+    }
+  }
 }));
-askform.addEventListener('submit',async e=>{e.preventDefault();const q=document.getElementById('question').value.trim();if(!q)return;bubble(q,'user');document.getElementById('question').value='';const wait=bubble('Searching the CareerPro knowledge base…');document.getElementById('send').disabled=true;
-try{const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});const data=await r.json();wait.textContent=data.answer||data.detail||'I could not process that question.'}
-catch(err){wait.textContent='I could not connect to the knowledge base. Please try again.'}finally{document.getElementById('send').disabled=false}});
-const jobq=document.getElementById('jobq'), chatgptlink=document.getElementById('chatgptlink');
-function updateJobLink(){const q=jobq.value.trim()||'current job vacancies in Nigeria';chatgptlink.href='https://chatgpt.com/?q='+encodeURIComponent('Search the web for current job vacancies matching: '+q+'. Prefer official employer career pages and reputable job boards. Include direct source URLs, application links, posting/closing dates when available, and clearly flag anything that cannot be verified. Do not invent listings.')}
-jobq.addEventListener('input',updateJobLink);updateJobLink();
-document.getElementById('jobsearch').addEventListener('click',()=>{updateJobLink();document.getElementById('jobresults').textContent='Click “Open ChatGPT job search” to run a current web search. Review each result and verify the application link on the employer’s official website.';chatgptlink.scrollIntoView({behavior:'smooth',block:'center'})});
-</script></body></html>
+
+askform.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const q = document.getElementById('question').value.trim();
+  if (!q) return;
+
+  bubble(q, 'user');
+  document.getElementById('question').value = '';
+
+  const wait = bubble('Searching the CareerPro knowledge base…');
+  document.getElementById('send').disabled = true;
+
+  try {
+    const r = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: q})
+    });
+
+    const data = await r.json();
+    wait.textContent = data.answer || data.detail || 'I could not process that question.';
+  } catch (err) {
+    wait.textContent = 'I could not connect to the knowledge base. Please try again.';
+  } finally {
+    document.getElementById('send').disabled = false;
+  }
+});
+
+const jobq = document.getElementById('jobq');
+const chatgptlink = document.getElementById('chatgptlink');
+
+function updateJobLink() {
+  const q = jobq.value.trim() || 'current job vacancies in Nigeria';
+
+  chatgptlink.href = 'https://chatgpt.com/?q=' + encodeURIComponent(
+    'Search the web for current job vacancies matching: ' + q +
+    '. Prefer official employer career pages and reputable job boards. ' +
+    'Include direct source URLs, application links, posting/closing dates ' +
+    'when available, and clearly flag anything that cannot be verified. ' +
+    'Do not invent listings.'
+  );
+}
+
+jobq.addEventListener('input', updateJobLink);
+updateJobLink();
+
+document.getElementById('jobsearch').addEventListener('click', () => {
+  updateJobLink();
+
+  document.getElementById('jobresults').textContent =
+    'Click “Open ChatGPT job search” to run a current web search. Review each result and verify the application link on the employer’s official website.';
+
+  chatgptlink.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center'
+  });
+});
+</script>
+
+</body>
+</html>
