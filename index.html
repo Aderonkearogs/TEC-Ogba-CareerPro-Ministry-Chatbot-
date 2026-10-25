@@ -222,6 +222,11 @@ a {
   overflow-wrap: anywhere;
 }
 
+.bubble a {
+  text-decoration: underline;
+  font-weight: 650;
+}
+
 .small {
   font-size: 12px;
   color: var(--muted);
@@ -673,8 +678,65 @@ askform.addEventListener('submit', async event => {
     if (!response.ok) {
       wait.textContent = data.detail || 'The question could not be processed.';
     } else {
-      wait.textContent = data.answer || data.detail ||
+      const answer = data.answer || data.detail ||
         'I could not process that question.';
+
+      // Official CareerPro Ministry WhatsApp Community invitation.
+      const communityUrl =
+        'https://chat.whatsapp.com/EDJSEtWBTYL3Y4gjAmQ8Ql?mode=gi_t';
+
+      // Match the invite URL whether or not it has ?mode=gi_t.
+      const communityPattern =
+        /https:\/\/chat\.whatsapp\.com\/EDJSEtWBTYL3Y4gjAmQ8Ql(?:\?mode=gi_t)?/g;
+
+      wait.textContent = '';
+
+      let lastIndex = 0;
+      let match;
+      let foundLink = false;
+
+      while ((match = communityPattern.exec(answer)) !== null) {
+        foundLink = true;
+
+        // Add the text that appears before the URL.
+        wait.appendChild(
+          document.createTextNode(answer.slice(lastIndex, match.index))
+        );
+
+        // Replace the plain URL with a clickable link.
+        const link = document.createElement('a');
+        link.href = communityUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent =
+          'Join the CareerPro Ministry WhatsApp Community ↗';
+
+        wait.appendChild(link);
+        lastIndex = communityPattern.lastIndex;
+      }
+
+      // Add any text after the URL.
+      wait.appendChild(
+        document.createTextNode(answer.slice(lastIndex))
+      );
+
+      // If the answer mentions the community but omits its URL,
+      // add the official link automatically.
+      if (
+        !foundLink &&
+        /whatsapp\s*(community|group)|community\s*(group|link)/i.test(answer)
+      ) {
+        wait.appendChild(document.createTextNode('\n\n'));
+
+        const link = document.createElement('a');
+        link.href = communityUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent =
+          'Join the CareerPro Ministry WhatsApp Community ↗';
+
+        wait.appendChild(link);
+      }
     }
   } catch (error) {
     wait.textContent =
