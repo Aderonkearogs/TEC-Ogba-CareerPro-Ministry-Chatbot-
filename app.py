@@ -23,12 +23,13 @@ app = FastAPI(
 
 
 # ============================================================
-# STATIC FILES: CHURCH LOGO
+# STATIC FILES
 # ============================================================
 
+# Keep the existing /static URL working.
 app.mount(
     "/static",
-    StaticFiles(directory=str(ROOT)),
+    StaticFiles(directory=str(ROOT), check_dir=False),
     name="static",
 )
 
@@ -38,10 +39,15 @@ app.mount(
 # ============================================================
 
 def normalize(text: str) -> str:
-    """Convert text to lowercase and remove punctuation."""
-    text = (text or "").lower()
-    text = re.sub(r"[^a-z0-9₦\s]", " ", text)
+    """Normalize text for matching without changing stored answers."""
+    text = (text or "").lower().replace("₦", " naira ")
+    text = text.replace("₦", " naira ")
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def tokenize(text: str) -> set[str]:
+    return set(normalize(text).split())
 
 
 # ============================================================
@@ -51,37 +57,25 @@ def normalize(text: str) -> str:
 QUESTION_RE = re.compile(r"^\s*Q:\s*(.*?)\s*$", re.IGNORECASE)
 ANSWER_RE = re.compile(r"^\s*A:\s*(.*?)\s*$", re.IGNORECASE)
 
-NUMBERED_HEADING_RE = re.compile(
-    r"^\s*\d{1,3}\s*[.)-]\s+[A-Z][A-Z0-9 /&()'’:-]{2,}\s*$"
-)
-
 DOCUMENT_HEADING_RE = re.compile(
-    r"^\s*(SECTION\s+\d+|APPENDIX|TABLE OF CONTENTS|"
-    r"FREQUENTLY ASKED QUESTIONS|KNOWLEDGE BASE)\b.*$",
+    r"^\s*(?:"
+    r"\d{1,3}\s*[.)-]\s+[A-Z][A-Z0-9 /&()'’:-]{2,}"
+    r"|END OF KNOWLEDGE BASE"
+    r")\s*$",
     re.IGNORECASE,
 )
 
 
 def is_document_heading(line: str) -> bool:
-    """Identify likely standalone document headings."""
-    return bool(
-        NUMBERED_HEADING_RE.match(line)
-        or DOCUMENT_HEADING_RE.match(line)
-    )
+    return bool(DOCUMENT_HEADING_RE.match(line.strip()))
 
 
 def load_knowledge_base():
     """
-    Load explicit Q&A records from knowledge_base.txt.
+    Load Q&A records from knowledge_base.txt.
 
-    Supported format:
-
-    Q: What is CareerPro Ministry?
-    A: CareerPro Ministry is...
-       Additional answer lines are allowed.
-
-    Each answer ends at the next Q: record or a detected
-    standalone document heading.
+    Answers remain unchanged. Each answer ends at the next Q:
+    entry or a standalone numbered document heading.
     """
 
     if not KB_PATH.is_file():
@@ -124,7 +118,11 @@ def load_knowledge_base():
             current_question = question_match.group(1).strip()
             continue
 
-        if answer_match and current_question and not reading_answer:
+        if (
+            answer_match
+            and current_question
+            and not reading_answer
+        ):
             answer_lines.append(answer_match.group(1).strip())
             reading_answer = True
             continue
@@ -132,20 +130,20 @@ def load_knowledge_base():
         if current_question and reading_answer:
             stripped = line.strip()
 
+            if is_document_heading(stripped):
+                save_record()
+                continue
+
             if not stripped:
                 if answer_lines and answer_lines[-1] != "":
                     answer_lines.append("")
-                continue
-
-            if is_document_heading(stripped):
-                save_record()
                 continue
 
             answer_lines.append(stripped)
 
     save_record()
 
-    # Remove exact duplicate records without changing their order.
+    # Remove exact duplicates, preserving the first occurrence.
     unique_records = []
     seen = set()
 
@@ -161,13 +159,13 @@ def load_knowledge_base():
 
     if not unique_records:
         raise ValueError(
-            "No valid Q&A records were found in knowledge_base.txt. "
-            "Use entries formatted as Q: followed by A:."
+            "No valid Q&A records were found. "
+            "Check that knowledge_base.txt contains Q: and A: entries."
         )
 
     if malformed_questions:
         print(
-            "WARNING: Questions with missing answers were ignored: "
+            "WARNING: Questions without valid answers were ignored: "
             + "; ".join(malformed_questions[:10])
         )
 
@@ -182,7 +180,6 @@ def load_knowledge_base():
 try:
     QA_RECORDS = load_knowledge_base()
     KB_LOAD_ERROR = None
-
 except Exception as error:
     QA_RECORDS = []
     KB_LOAD_ERROR = str(error)
@@ -193,63 +190,66 @@ except Exception as error:
 # GREETING HANDLING
 # ============================================================
 
-GREETING_PATTERNS = [
-    r"hi",
-    r"hello",
-    r"hey",
-    r"hiya",
-    r"good morning",
-    r"good afternoon",
-    r"good evening",
-    r"how are you",
-    r"how are you doing",
-    r"thank you",
-    r"thanks",
-    r"bye",
-    r"goodbye",
-    r"see you",
-]
+EXACT_GREETINGS = {
+    "hi",
+    "hello",
+    "hey",
+    "hiya",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "how are you",
+    "how are you doing",
+    "thanks",
+    "thank you",
+    "bye",
+    "goodbye",
+    "see you",
+}
 
 
 def detect_greeting(question: str):
-    """Respond to greetings without searching for unrelated answers."""
+    """
+    Handle standalone greetings only.
+
+    For example, 'hello, what is CareerPro?' must still
+    reach knowledge-base retrieval.
+    """
     text = normalize(question)
 
-    if not text:
+    if text not in EXACT_GREETINGS:
         return None
 
-    for greeting in GREETING_PATTERNS:
-        if text == greeting or text.startswith(greeting + " "):
-            if greeting in {"bye", "goodbye", "see you"}:
-                return (
-                    "Thank you for visiting the CareerPro Ministry "
-                    "chatbot. Have a blessed day!"
-                )
+    if text in {"bye", "goodbye", "see you"}:
+        return (
+            "Thank you for visiting the CareerPro Ministry chatbot. "
+            "Have a blessed day!"
+        )
 
-            if greeting in {"thanks", "thank you"}:
-                return (
-                    "You're welcome! What would you like to know "
-                    "about CareerPro Ministry?"
-                )
+    if text in {"thanks", "thank you"}:
+        return (
+            "You're welcome! What would you like to know "
+            "about CareerPro Ministry?"
+        )
 
-            if greeting in {"how are you", "how are you doing"}:
-                return (
-                    "I'm here and ready to help. What would you like "
-                    "to know about CareerPro Ministry?"
-                )
+    if text in {"how are you", "how are you doing"}:
+        return (
+            "I'm here and ready to help. You can ask me about "
+            "CareerPro Ministry, its programmes, career opportunities, "
+            "business support, the Enterprise Development Fund, "
+            "mentorship or Enterprise Month."
+        )
 
-            return (
-                "Hello! Welcome to The Elevation Church Ogba "
-                "CareerPro Ministry chatbot. You can ask me about "
-                "the ministry, programmes, registration, events, "
-                "mentorship, and career opportunities."
-            )
-
-    return None
+    return (
+        "Hello! Welcome to The Elevation Church Ogba CareerPro "
+        "Ministry chatbot. You can ask me about the ministry, "
+        "programmes, events, mentorship, job opportunities, "
+        "business support and the Enterprise Development Fund."
+    )
 
 
 # ============================================================
-# QUESTION MATCHING
+# QUESTION PREPROCESSING
 # ============================================================
 
 STOP_WORDS = {
@@ -260,64 +260,62 @@ STOP_WORDS = {
     "in", "on", "with", "about", "tell", "me",
     "please", "i", "my", "you", "your", "we",
     "they", "it", "this", "that", "there", "be",
-    "am", "as", "at", "from", "by",
+    "am", "as", "at", "from", "by", "get",
+    "know", "like", "want", "need", "much",
+    "more", "all", "something", "anything",
+    "available", "provide", "offer", "offers",
+    "support", "help", "information",
 }
 
 
 def useful_words(text: str) -> set[str]:
-    """Extract meaningful words from a question."""
     return {
         word
-        for word in normalize(text).split()
+        for word in tokenize(text)
         if len(word) > 2 and word not in STOP_WORDS
     }
 
 
+# Expand only related terms, rather than adding every synonym
+# in a group to every query. This reduces false matches.
 SYNONYM_GROUPS = [
     {
-        "job", "jobs", "employment", "work", "vacancy",
-        "vacancies", "role", "roles", "opportunity",
-        "opportunities",
+        "job", "jobs", "employment", "vacancy",
+        "vacancies", "role", "roles",
     },
     {
-        "career", "careers", "professional",
-        "profession", "occupation",
-    },
-    {
-        "ministry", "programme", "program", "initiative",
+        "career", "careers", "profession",
+        "professional", "occupation",
     },
     {
         "business", "businesses", "enterprise",
-        "entrepreneur", "entrepreneurship",
+        "entrepreneur", "entrepreneurs", "entrepreneurship",
     },
     {
-        "funding", "fund", "grant", "grants",
-        "financial", "money", "finance",
+        "fund", "funding", "grant", "grants",
+        "finance", "financial", "money", "capital",
     },
     {
         "mentor", "mentoring", "mentorship",
     },
     {
-        "join", "joining", "register", "registration",
-        "signup", "enrol", "enroll",
+        "join", "register", "registration",
+        "signup", "enrol", "enroll", "apply", "application",
     },
     {
-        "start", "starts", "started", "begin",
-        "begins", "beginning",
+        "start", "starts", "begin", "begins",
     },
     {
         "prayer", "prayers", "pray", "praying",
     },
     {
         "testimony", "testimonies", "testify",
-        "story", "stories",
     },
     {
         "leader", "leadership", "head", "leads",
     },
     {
         "activity", "activities", "event", "events",
-        "session", "sessions",
     },
     {
         "date", "dates", "time", "schedule",
@@ -326,43 +324,193 @@ SYNONYM_GROUPS = [
         "location", "venue", "address",
     },
     {
-        "contact", "contacts", "reach",
-        "message", "connect",
+        "contact", "reach", "message", "connect",
+    },
+    {
+        "loan", "loans", "borrow", "borrowing",
+    },
+    {
+        "fee", "fees", "charge", "charges", "cost",
+    },
+    {
+        "speaker", "speakers", "panelist", "panelists",
     },
 ]
 
 
-def expand_synonyms(words: set[str]) -> set[str]:
-    """Expand meaningful words with related terms."""
-    expanded = set(words)
+def related_words(word: str) -> set[str]:
+    result = {word}
 
     for group in SYNONYM_GROUPS:
-        if expanded.intersection(group):
-            expanded.update(group)
+        if word in group:
+            result.update(group)
 
-    return expanded
+    # Common inflection handling.
+    if word.endswith("ies") and len(word) > 4:
+        result.add(word[:-3] + "y")
+    if word.endswith("s") and not word.endswith("ss") and len(word) > 3:
+        result.add(word[:-1])
+    if word.endswith("ing") and len(word) > 5:
+        result.add(word[:-3])
+    if word.endswith("ed") and len(word) > 4:
+        result.add(word[:-2])
 
+    return result
+
+
+def expanded_words(words: set[str]) -> set[str]:
+    result = set()
+
+    for word in words:
+        result.update(related_words(word))
+
+    return result
+
+
+# ============================================================
+# INTENT ALIASES
+# ============================================================
+
+# These aliases help paraphrased questions reach the right
+# existing knowledge-base record. They do not replace answers.
+INTENT_ALIASES = {
+    "What is CareerPro Ministry?": [
+        "tell me what careerpro is all about",
+        "what is career pro",
+        "explain careerpro to me",
+        "what does careerpro stand for",
+        "what is the careerpro ministry about",
+        "tell me about careerpro",
+        "what is this ministry about",
+    ],
+    "What does CareerPro Ministry do?": [
+        "what services does careerpro provide",
+        "what can careerpro help me with",
+        "what does careerpro offer",
+        "what are the benefits of careerpro",
+        "how can careerpro help me",
+    ],
+    "Does CareerPro support business owners?": [
+        "what type of business support can i get",
+        "what business support is available",
+        "how can careerpro support my business",
+        "what support can i get for my business",
+        "does careerpro help entrepreneurs",
+        "i own a business what support is available",
+        "what help is available for business owners",
+    ],
+    "What is the CareerPro Enterprise Development Fund?": [
+        "tell me about the enterprise fund",
+        "what is the enterprise fund",
+        "what is careerpro business fund",
+        "what is the careerpro business funding initiative",
+        "how does the enterprise development fund work",
+        "what business funding does careerpro offer",
+    ],
+    "How much is the CareerPro Enterprise Development Fund?": [
+        "how much money is in the fund",
+        "what is the total enterprise fund amount",
+        "how much funding is available",
+        "how much is careerpro giving businesses",
+        "what is the fund size",
+    ],
+    "How much will each business receive?": [
+        "how much money can my business get",
+        "how much will my business receive",
+        "how much can one business get",
+        "what is the amount per business",
+        "how much is available per business",
+    ],
+    "Is the ₦2 million a loan?": [
+        "is the enterprise fund a loan",
+        "do i have to pay the money back",
+        "is it a grant or a loan",
+        "is careerpro funding repayable",
+        "will i need to repay the funding",
+    ],
+    "When will registration for the Enterprise Development Fund open?": [
+        "when can i apply for the enterprise fund",
+        "when does business funding registration start",
+        "when will the grant application open",
+        "when can businesses register for funding",
+        "is the enterprise fund application open",
+    ],
+    "Who is the Enterprise Development Fund for?": [
+        "who can apply for the enterprise fund",
+        "who is eligible for business funding",
+        "can my business apply",
+        "what are the requirements for the business grant",
+        "which businesses qualify for funding",
+    ],
+    "What is Enterprise Month 2026?": [
+        "tell me about enterprise month",
+        "what is happening in november",
+        "what is careerpro doing in november",
+        "what are the enterprise month activities",
+    ],
+    "What is the Marketplace Masterclass?": [
+        "what masterclasses does careerpro organise",
+        "what is the careerpro masterclass",
+        "what training sessions are available",
+    ],
+    "What are Marketplace Mentorship Circles?": [
+        "how can i get a mentor",
+        "does careerpro offer mentorship",
+        "how does the mentorship programme work",
+        "can someone mentor me in my career",
+    ],
+    "I am looking for a job. Can CareerPro help me?": [
+        "i need a job",
+        "can careerpro help me find work",
+        "how can i find a job through careerpro",
+        "i am searching for employment",
+    ],
+}
+
+
+def build_alias_map():
+    result = {}
+
+    by_question = {
+        normalize(record["question"]): record["question"]
+        for record in QA_RECORDS
+    }
+
+    for canonical_question, aliases in INTENT_ALIASES.items():
+        actual_question = by_question.get(normalize(canonical_question))
+
+        if not actual_question:
+            continue
+
+        for alias in aliases:
+            result.setdefault(normalize(alias), actual_question)
+
+    return result
+
+
+ALIAS_MAP = build_alias_map()
+
+
+# ============================================================
+# MATCHING UTILITIES
+# ============================================================
 
 def is_generic_fallback(record: dict) -> bool:
-    """Exclude generic fallback entries from normal matching."""
     question = normalize(record["question"])
-
-    fallback_phrases = [
-        "question that isnt answered here",
-        "question that is not answered here",
-        "questions not covered",
-        "not answered here",
-        "not covered",
-    ]
 
     return any(
         phrase in question
-        for phrase in fallback_phrases
+        for phrase in (
+            "question that isnt answered here",
+            "question that is not answered here",
+            "questions not covered",
+            "not answered here",
+            "not covered",
+        )
     )
 
 
 def fuzzy_similarity(first: str, second: str) -> float:
-    """Compare two normalized strings."""
     first = normalize(first)
     second = normalize(second)
 
@@ -372,32 +520,29 @@ def fuzzy_similarity(first: str, second: str) -> float:
     return SequenceMatcher(None, first, second).ratio()
 
 
-def keyword_similarity(
-    user_question: str,
-    stored_question: str,
-) -> float:
-    """Compare meaningful words in two questions."""
-    user_words = expand_synonyms(useful_words(user_question))
-    stored_words = expand_synonyms(useful_words(stored_question))
+def keyword_similarity(user_question: str, stored_text: str) -> float:
+    user_words = useful_words(user_question)
+    stored_words = useful_words(stored_text)
 
     if not user_words or not stored_words:
         return 0.0
 
-    overlap = user_words & stored_words
+    user_expanded = expanded_words(user_words)
+    stored_expanded = expanded_words(stored_words)
 
-    user_coverage = len(overlap) / len(user_words)
-    stored_coverage = len(overlap) / len(stored_words)
+    overlap = user_expanded & stored_expanded
 
-    return user_coverage * 0.65 + stored_coverage * 0.35
+    user_coverage = len(overlap) / max(len(user_expanded), 1)
+    stored_coverage = len(overlap) / max(len(stored_expanded), 1)
+
+    # Favour covering the user's intent, while still rewarding
+    # matches that describe the stored question accurately.
+    return 0.7 * user_coverage + 0.3 * stored_coverage
 
 
-def phrase_bonus(
-    user_question: str,
-    stored_question: str,
-) -> float:
-    """Reward exact or contained phrase matches."""
+def phrase_bonus(user_question: str, stored_text: str) -> float:
     user_text = normalize(user_question)
-    stored_text = normalize(stored_question)
+    stored_text = normalize(stored_text)
 
     if not user_text or not stored_text:
         return 0.0
@@ -405,26 +550,201 @@ def phrase_bonus(
     if user_text == stored_text:
         return 1.0
 
-    if len(user_text) >= 5 and (
-        user_text in stored_text
-        or stored_text in user_text
-    ):
-        return 0.6
+    if len(user_text) >= 5 and user_text in stored_text:
+        return 0.7
+
+    if len(stored_text) >= 5 and stored_text in user_text:
+        return 0.65
 
     return 0.0
 
 
+def answer_topic_score(user_question: str, answer: str) -> float:
+    """
+    Use answer content as supporting evidence.
+
+    This helps when the user mentions a term that appears in the
+    answer but not in the original stored question.
+    """
+    question_words = useful_words(user_question)
+    answer_words = useful_words(answer)
+
+    if not question_words or not answer_words:
+        return 0.0
+
+    expanded_question = expanded_words(question_words)
+    expanded_answer = expanded_words(answer_words)
+
+    overlap = expanded_question & expanded_answer
+
+    return len(overlap) / max(len(expanded_question), 1)
+
+
+def record_score(user_question: str, record: dict) -> float:
+    user_text = normalize(user_question)
+    stored_question = record["question"]
+    stored_answer = record["answer"]
+
+    if user_text == normalize(stored_question):
+        return 1.0
+
+    fuzzy_score = fuzzy_similarity(user_text, stored_question)
+    keyword_score = keyword_similarity(user_question, stored_question)
+    phrase_score = phrase_bonus(user_question, stored_question)
+    answer_score = answer_topic_score(user_question, stored_answer)
+
+    score = (
+        fuzzy_score * 0.20
+        + keyword_score * 0.50
+        + phrase_score * 0.10
+        + answer_score * 0.20
+    )
+
+    # Specific, meaningful query terms should overlap with the
+    # stored question or answer. Avoid fuzzy-only false positives.
+    user_words = useful_words(user_question)
+    stored_words = useful_words(stored_question)
+    answer_words = useful_words(stored_answer)
+
+    expanded_user = expanded_words(user_words)
+    expanded_question = expanded_words(stored_words)
+    expanded_answer = expanded_words(answer_words)
+
+    if not (
+        expanded_user.intersection(expanded_question)
+        or expanded_user.intersection(expanded_answer)
+    ):
+        return 0.0
+
+    return min(score, 1.0)
+
+
+# ============================================================
+# TOPIC ROUTING
+# ============================================================
+
+TOPIC_HINTS = {
+    "enterprise_fund": {
+        "enterprise fund", "development fund", "business grant",
+        "business funding", "funding cycle", "two million",
+        "2 million", "₦2 million", "grant application",
+    },
+    "business_support": {
+        "business support", "support my business",
+        "business owner", "business owners", "entrepreneur",
+        "entrepreneurship",
+    },
+    "careerpro_about": {
+        "what is careerpro", "about careerpro",
+        "careerpro ministry", "careerpro all about",
+    },
+    "enterprise_month": {
+        "enterprise month", "november activities",
+        "november programme",
+    },
+}
+
+
+def detect_topic(question: str):
+    text = normalize(question)
+
+    # Check the more specific funding topic first.
+    if any(
+        normalize(hint) in text
+        for hint in TOPIC_HINTS["enterprise_fund"]
+    ):
+        return "enterprise_fund"
+
+    if any(
+        normalize(hint) in text
+        for hint in TOPIC_HINTS["business_support"]
+    ):
+        return "business_support"
+
+    if any(
+        normalize(hint) in text
+        for hint in TOPIC_HINTS["careerpro_about"]
+    ):
+        return "careerpro_about"
+
+    if any(
+        normalize(hint) in text
+        for hint in TOPIC_HINTS["enterprise_month"]
+    ):
+        return "enterprise_month"
+
+    return None
+
+
+def topic_priority(question: str, record: dict) -> float:
+    topic = detect_topic(question)
+    stored_question = normalize(record["question"])
+    stored_answer = normalize(record["answer"])
+
+    if not topic:
+        return 0.0
+
+    if topic == "enterprise_fund":
+        if any(term in stored_question for term in (
+            "enterprise development fund",
+            "how much is the careerpro enterprise",
+            "how many businesses will receive funding",
+            "how much will each business receive",
+            "is the 2 million a loan",
+            "when will registration for the enterprise",
+            "who is the enterprise development fund for",
+        )):
+            return 0.16
+
+        if "enterprise development fund" in stored_answer:
+            return 0.05
+
+    elif topic == "business_support":
+        if "does careerpro support business owners" in stored_question:
+            return 0.15
+
+        if "business and entrepreneurship support" in stored_question:
+            return 0.12
+
+        if "enterprise development fund" in stored_question:
+            return 0.08
+
+    elif topic == "careerpro_about":
+        if stored_question == "what is careerpro ministry":
+            return 0.18
+
+    elif topic == "enterprise_month":
+        if "enterprise month 2026" in stored_question:
+            return 0.15
+
+    return 0.0
+
+
+# ============================================================
+# RETRIEVE THE BEST MATCH
+# ============================================================
+
 def retrieve_best_match(user_question: str):
-    """Return the strongest sufficiently relevant Q&A record."""
     if not QA_RECORDS:
         return None
 
     user_text = normalize(user_question)
     user_words = useful_words(user_question)
 
-    # Avoid choosing arbitrary records for greetings or vague input.
     if not user_words:
         return None
+
+    # Explicit alias match is the strongest paraphrase signal.
+    alias_question = ALIAS_MAP.get(user_text)
+
+    if alias_question:
+        for record in QA_RECORDS:
+            if normalize(record["question"]) == normalize(alias_question):
+                return {
+                    "record": record,
+                    "score": 0.96,
+                    "method": "alias",
+                }
 
     candidates = []
 
@@ -432,45 +752,14 @@ def retrieve_best_match(user_question: str):
         if is_generic_fallback(record):
             continue
 
-        stored_question = record["question"]
-        stored_words = useful_words(stored_question)
-
-        fuzzy_score = fuzzy_similarity(
-            user_text,
-            stored_question,
-        )
-
-        keyword_score = keyword_similarity(
-            user_question,
-            stored_question,
-        )
-
-        phrase_score = phrase_bonus(
-            user_question,
-            stored_question,
-        )
-
-        score = (
-            fuzzy_score * 0.25
-            + keyword_score * 0.60
-            + phrase_score * 0.15
-        )
-
-        if user_text == normalize(stored_question):
-            score = 1.0
-
-        # Fuzzy wording alone must not match unrelated topics.
-        expanded_user = expand_synonyms(user_words)
-        expanded_stored = expand_synonyms(stored_words)
-
-        if not expanded_user.intersection(expanded_stored):
-            score = min(score, 0.25)
+        score = record_score(user_question, record)
+        score += topic_priority(user_question, record)
+        score = min(score, 1.0)
 
         candidates.append({
             "record": record,
             "score": score,
-            "fuzzy": fuzzy_score,
-            "keyword": keyword_score,
+            "method": "hybrid",
         })
 
     if not candidates:
@@ -483,14 +772,20 @@ def retrieve_best_match(user_question: str):
 
     best = candidates[0]
 
-    if best["score"] < 0.45:
+    # Conservative threshold: avoid confident answers to unrelated
+    # questions when the knowledge base does not contain the answer.
+    if best["score"] < 0.34:
         return None
 
     if len(candidates) > 1:
         second = candidates[1]
-        difference = best["score"] - second["score"]
 
-        if best["score"] < 0.60 and difference < 0.07:
+        # If the best two results are nearly tied, require stronger
+        # evidence rather than returning a potentially unrelated answer.
+        if (
+            best["score"] < 0.48
+            and best["score"] - second["score"] < 0.035
+        ):
             return None
 
     return best
@@ -514,7 +809,6 @@ class AskRequest(BaseModel):
 
 @app.get("/")
 async def home():
-    """Serve index.html from web/ or the app directory."""
     possible_paths = [
         WEB_DIR / "index.html",
         ROOT / "index.html",
@@ -542,7 +836,6 @@ async def home():
 
 @app.get("/health")
 async def health():
-    """Report application and knowledge-base status."""
     return {
         "status": "ok",
         "service": "careerpro-ministry-chatbot",
@@ -572,7 +865,6 @@ async def ask(body: AskRequest):
             detail="Please enter a question.",
         )
 
-    # Handle greetings before knowledge-base retrieval.
     greeting_reply = detect_greeting(question)
 
     if greeting_reply:
