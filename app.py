@@ -13,7 +13,6 @@ WEB_DIR = ROOT / "web"
 KB_PATH = ROOT / "knowledge_base.txt"
 
 app = FastAPI(title="The Elevation Church Ogba CareerPro Ministry Chatbot")
-app.mount("/web", StaticFiles(directory=str(WEB_DIR)), name="web")
 
 def load_sections():
     text = KB_PATH.read_text(encoding="utf-8")
@@ -50,7 +49,7 @@ class AskRequest(BaseModel):
 
 @app.get("/")
 async def home():
-    return FileResponse(str(WEB_DIR / "index.html"))
+    return FileResponse("index.html")
 
 @app.get("/health")
 async def health():
