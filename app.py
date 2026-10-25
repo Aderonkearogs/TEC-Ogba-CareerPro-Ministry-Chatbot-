@@ -8,14 +8,12 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 from job_sources import is_verified, search_jobs
 
 load_dotenv()
 
 app = FastAPI(title="The Elevation Church Ogba CareerPro Ministry Chatbot")
-app.mount("/web", StaticFiles(directory="web"), name="web")
 
 VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
 WA_TOKEN = os.getenv("WHATSAPP_TOKEN", "")
@@ -26,8 +24,7 @@ API_VERSION = os.getenv("GRAPH_API_VERSION", "")
 
 @app.get("/")
 async def home():
-    return FileResponse("web/index.html")
-
+    return FileResponse("index.html")
 
 @app.get("/health")
 async def health():
