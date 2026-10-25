@@ -25,7 +25,7 @@ SECTIONS = load_sections()
 def terms(text):
     return set(re.findall(r"[a-z0-9₦]+", text.lower()))
 
-def retrieve(question, limit=4):
+def retrieve(question, limit=1):
     q_terms = terms(question)
     if not q_terms:
         return []
