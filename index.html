@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CareerPro Ministry job-search assistant for The Elevation Church, Ogba.">
+<title>The Elevation Church Ogba CareerPro Ministry Chatbot</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#18212f;background:#f5f7fb}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:780px;margin:0 auto;padding:28px 16px 48px}
+header{background:#172554;color:#fff;border-radius:20px;padding:26px}
+h1{font-size:clamp(1.55rem,4vw,2.2rem);line-height:1.2;margin:0 0 10px}
+header p{line-height:1.6;margin:0;color:#e0e7ff}
+main{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:22px;margin-top:18px;box-shadow:0 8px 30px #0f172a0a}
+label{font-weight:650;display:block;margin-bottom:8px}
+textarea{width:100%;min-height:118px;resize:vertical;padding:13px;border:1px solid #cbd5e1;border-radius:12px;font:inherit}
+button{border:0;border-radius:12px;background:#1d4ed8;color:white;font:inherit;font-weight:650;padding:12px 18px;cursor:pointer;margin-top:12px}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.note{font-size:.9rem;line-height:1.55;color:#475569}.status{margin-top:16px;line-height:1.55}
+.job{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-top:12px}
+.job h3{margin:0 0 7px;font-size:1.05rem}.job p{margin:5px 0;color:#334155}
+a{color:#1d4ed8;overflow-wrap:anywhere}.pill{font-size:.8rem;background:#e2e8f0;padding:4px 8px;border-radius:99px;display:inline-block}
+footer{color:#64748b;font-size:.82rem;padding:16px 4px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>The Elevation Church Ogba CareerPro Ministry Chatbot</h1>
+<p>Explore career support and search for job opportunities. Tell us the role you want, your experience, location, industry, and preferred work arrangement.</p>
+</header>
+<main>
+<label for="query">What job are you looking for?</label>
+<textarea id="query" placeholder="Example: Data Governance Manager, 15 years' experience, Lagos, fintech, hybrid"></textarea>
+<button id="search">Search vacancies</button>
+<p class="note">Vacancies will be displayed only when a live, authorised job source is connected and the employer and specific posting can be confirmed. Never pay a recruiter to apply.</p>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+</main>
+<main>
+<h2>CareerPro Ministry</h2>
+<p>Use the search box above to describe your career goals. This website prototype does not yet connect to a live job database; live vacancies and verified application links will appear after an authorised source is configured.</p>
+<p class="note">This chatbot is an independent technical prototype. Confirm ministry approval before publicly presenting it as an official church service.</p>
+</main>
+<footer>CareerPro Ministry · The Elevation Church, Ogba · Protect your personal information and verify vacancies before sharing sensitive documents.</footer>
+</div>
+<script>
+const input=document.getElementById('query'), status=document.getElementById('status');
+document.getElementById('search').addEventListener('click', async()=>{
+ const q=input.value.trim();
+ if(q.length<3){status.textContent='Please enter the job title and any preferences.';return;}
+ status.textContent='Searching connected job sources…';
+ try{
+   const res=await fetch('/api/search?q='+encodeURIComponent(q));
+   const data=await res.json();
+   status.replaceChildren();
+   if(!res.ok){status.textContent=data.detail||'Search failed. Please try again.';return;}
+   if(!data.results.length){status.textContent=data.message||'No matching verified vacancies were found.';return;}
+   data.results.forEach(job=>{
+     const card=document.createElement('article');card.className='job';
+     const h=document.createElement('h3');h.textContent=job.title;card.append(h);
+     const p=document.createElement('p');p.textContent=job.company+' · '+job.location+' · '+job.work_mode;card.append(p);
+     const badge=document.createElement('span');badge.className='pill';badge.textContent=job.verification;card.append(badge);
+     if(job.posted_at){const d=document.createElement('p');d.textContent='Posted: '+job.posted_at;card.append(d);}
+     const a=document.createElement('a');a.href=job.apply_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open application';card.append(a);
+     status.append(card);
+   });
+ }catch(e){status.textContent='The search service is unavailable. Please try again later.';}
+});
+</script>
+</body>
+</html>
