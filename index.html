@@ -301,6 +301,40 @@ a {
   font-weight: 650;
 }
 
+.contactbox {
+  display: none;
+  padding: 22px;
+}
+
+.contactbox.active {
+  display: block;
+}
+
+.contact-card {
+  background: #f0f4fb;
+  border: 1px solid #e3e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+.contact-button {
+  display: inline-block;
+  margin-top: 12px;
+  background: #16834a;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.contact-button:hover {
+  background: #11683a;
+  color: white;
+}
+
 @media (max-width: 720px) {
   header { padding: 22px 16px; }
 
@@ -346,7 +380,7 @@ a {
 
   button.primary { padding: 12px; }
 
-  .jobbox, .coachbox { padding: 16px; }
+  .jobbox, .coachbox, .contactbox { padding: 16px; }
 }
 
 @media (max-width: 380px) {
@@ -396,6 +430,7 @@ a {
     <button class="nav" data-view="prayer">🙏 Prayer Request</button>
     <button class="nav" data-view="testimony">✨ Share a Testimony</button>
     <button class="nav" data-view="community">💚 WhatsApp Community</button>
+    <button class="nav" data-view="contact">📞 Contact CareerPro</button>
   </aside>
 
   <section class="panel">
@@ -436,7 +471,7 @@ a {
       </p>
     </div>
 
-    <!-- New career and business coach -->
+    <!-- Career and business coach -->
     <div class="coachbox" id="coachview">
       <div class="coachnote">
         <strong>Need advice beyond the CareerPro ministry guide?</strong><br>
@@ -468,6 +503,27 @@ a {
         ChatGPT opens separately. You may need to sign in to use it.
       </p>
     </div>
+
+    <!-- Contact CareerPro -->
+    <div class="contactbox" id="contactview">
+      <div class="coachnote">
+        <strong>Would you like to speak with the CareerPro Ministry team?</strong><br>
+        Send us a direct WhatsApp message for enquiries about CareerPro activities, mentorship, business support or other ministry information.
+      </div>
+
+      <div class="contact-card">
+        <strong>Contact CareerPro on WhatsApp</strong>
+        <p>WhatsApp: 07065907170</p>
+        <p>Tap the button below to start a direct conversation with the CareerPro team.</p>
+
+        <a
+          class="contact-button"
+          href="https://wa.me/2347065907170"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Message CareerPro on WhatsApp ↗</a>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -477,6 +533,7 @@ const askform = document.getElementById('askform');
 const chatview = document.getElementById('chatview');
 const jobview = document.getElementById('jobview');
 const coachview = document.getElementById('coachview');
+const contactview = document.getElementById('contactview');
 
 function bubble(text, who = 'bot') {
   const d = document.createElement('div');
@@ -498,12 +555,10 @@ document.querySelectorAll('.nav').forEach(button => {
 
     const view = button.dataset.view;
 
-    document.getElementById('title').textContent =
-      button.textContent.replace(/^[^A-Za-z🧭💬🔎📅💼🌱🤝🙏✨💚]+/, '').trim();
-
     chatview.style.display = 'none';
     jobview.classList.remove('active');
     coachview.classList.remove('active');
+    contactview.classList.remove('active');
 
     const subtitle = document.getElementById('subtitle');
 
@@ -531,6 +586,14 @@ document.querySelectorAll('.nav').forEach(button => {
       return;
     }
 
+    if (view === 'contact') {
+      document.getElementById('title').textContent = 'Contact CareerPro';
+      subtitle.textContent =
+        'Reach out to the CareerPro Ministry team directly on WhatsApp.';
+      contactview.classList.add('active');
+      return;
+    }
+
     const content = {
       activities:
         'CareerPro activities listed in the knowledge base include Marketplace Power Hour, Marketplace Conquerors Forum, quarterly Marketplace Masterclasses, Marketplace Testimony Series, Mentorship Circles, prayer covering, career development sessions and job/business opportunities.',
@@ -554,8 +617,8 @@ document.querySelectorAll('.nav').forEach(button => {
         'Join the CareerPro Ministry WhatsApp community using the official link below.'
     };
 
-    document.getElementById('title').textContent = button.textContent
-      .replace(/^[^A-Za-z]+/, '').trim();
+    document.getElementById('title').textContent =
+      button.textContent.replace(/^[^A-Za-z]+/, '').trim();
 
     subtitle.textContent = 'CareerPro Ministry information and resources.';
     chatview.style.display = 'flex';
@@ -689,6 +752,7 @@ document.getElementById('coachbutton').addEventListener('click', () => {
   if (!newWindow) {
     message.textContent =
       'Your browser blocked the new window. Use the link below to open ChatGPT.';
+
     let fallback = document.getElementById('coachfallback');
 
     if (!fallback) {
