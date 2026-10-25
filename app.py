@@ -5,6 +5,7 @@ from difflib import SequenceMatcher
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 
@@ -16,8 +17,24 @@ ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 KB_PATH = ROOT / "knowledge_base.txt"
 
+LOGO_PATH = ROOT / "elevation-church-logo.png"
+
 app = FastAPI(
     title="The Elevation Church Ogba CareerPro Ministry Chatbot"
+)
+
+
+# ============================================================
+# STATIC FILES: CHURCH LOGO
+# ============================================================
+
+# Makes the church logo available at:
+# /static/elevation-church-logo.png
+
+app.mount(
+    "/static",
+    StaticFiles(directory=str(ROOT)),
+    name="static",
 )
 
 
@@ -122,7 +139,7 @@ STOP_WORDS = {
     "in", "on", "with", "about", "tell", "me",
     "please", "i", "my", "you", "your", "we",
     "they", "it", "this", "that", "there", "be",
-    "am", "are", "as", "at", "from", "by",
+    "am", "as", "at", "from", "by",
 }
 
 
@@ -441,6 +458,8 @@ async def health():
         "web_folder_exists": WEB_DIR.is_dir(),
         "web_index_exists": (WEB_DIR / "index.html").is_file(),
         "root_index_exists": (ROOT / "index.html").is_file(),
+        "church_logo_exists": LOGO_PATH.is_file(),
+        "church_logo_url": "/static/elevation-church-logo.png",
         "knowledge_base_error": KB_LOAD_ERROR,
     }
 
