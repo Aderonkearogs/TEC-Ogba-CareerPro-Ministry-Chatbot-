@@ -62,7 +62,7 @@ document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{
  prayer:'Submit a prayer request through the Prayer & Testimony Form. Personal information is not compulsory, according to the knowledge base.',
  testimony:'Share career or business testimonies through the Prayer & Testimony Form.',
  community:'Join the CareerPro Ministry WhatsApp community using the official link below.'
- }[v]||'For information not covered here, please confirm with the CareerPro Ministry team.');
+ }[v]||'For information not covered here, please confirm with the CareerPro Ministry team.';
  chatview.style.display='flex';jobview.classList.remove('active');messages.innerHTML='';bubble(content);
  if(v==='prayer'||v==='testimony'||v==='community'){const d=document.createElement('div');d.className='bubble bot';d.innerHTML='';const a=document.createElement('a');a.href=v==='community'?'https://chat.whatsapp.com/EDJSEtWBTYL3Y4gjAmQ8Ql?mode=gi_t':'https://forms.gle/sbx63TAHaeg1wo5y6';a.target='_blank';a.rel='noopener';a.textContent=v==='community'?'Join WhatsApp Community':'Open Prayer & Testimony Form';d.appendChild(a);messages.appendChild(d)}
  }
