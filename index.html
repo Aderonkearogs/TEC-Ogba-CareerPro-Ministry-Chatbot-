@@ -40,7 +40,7 @@ a{color:#2458a6;overflow-wrap:anywhere}.small{font-size:12px;color:var(--muted);
 </aside>
 <section class="panel">
 <div class="panelhead"><h2 id="title">Ask CareerPro</h2><p id="subtitle">Ask about the ministry. Answers are drawn from the official CareerPro knowledge-base document.</p></div>
-<div id="chatview"><div id="messages"><div class="bubble bot">Welcome to CareerPro Ministry, The Elevation Church, Ogba! 👋🏽\n\nAsk me about our activities, mentorship, business support, Enterprise Development Fund, prayer requests or other information in the ministry guide.</div></div>
+<div id="chatview"><div id="messages"><div class="bubble bot">Welcome to CareerPro Ministry, The Elevation Church, Ogba! 👋🏽 Ask me about our activities, mentorship, business support, Enterprise Development Fund, prayer requests or other information in the ministry guide.</div></div>
 <form id="askform"><textarea id="question" placeholder="Type your CareerPro question…" required></textarea><button class="primary" id="send">Send</button></form><div class="small">Ministry Q&A uses the supplied knowledge-base document. If the document does not contain an answer, the chatbot will say so.</div></div>
 <div class="jobbox" id="jobview"><div class="jobnote">Job search is separate from ministry Q&A. Use the ChatGPT search link below to find current listings; confirm every vacancy on the employer’s official careers page before applying.</div><label for="jobq">Job title, industry and location</label><input id="jobq" placeholder="e.g. Data Analyst, Lagos, hybrid"><button class="primary" id="jobsearch">Search current jobs</button><div id="jobresults" style="margin-top:18px"></div><p><a id="chatgptlink" target="_blank" rel="noopener">Open ChatGPT job search ↗</a></p></div>
 </section>
@@ -52,6 +52,7 @@ document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{
  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');
  const v=b.dataset.view;document.getElementById('title').textContent=b.textContent.replace(/^[^A-Za-z]+/,'');
  chatview.style.display=v==='ask'?'flex':'none';jobview.classList.toggle('active',v==='jobs');
+ chatview.style.flexDirection='column';
  if(v==='ask')document.getElementById('subtitle').textContent='Answers are drawn from the official CareerPro knowledge-base document.';
  else if(v==='jobs')document.getElementById('subtitle').textContent='Search for current vacancies. Verify each listing with the employer.';
  else {const content={
