@@ -3,6 +3,7 @@ from pathlib import Path
 from difflib import SequenceMatcher
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -19,6 +20,22 @@ LOGO_PATH = ROOT / "elevation-church-logo.png"
 
 app = FastAPI(
     title="The Elevation Church Ogba CareerPro Ministry Chatbot"
+)
+
+
+# ============================================================
+# CORS CONFIGURATION
+# ============================================================
+
+# Allow the separately hosted Render Static Site to call this API.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://careerpro-website.onrender.com",
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
 
 
@@ -348,10 +365,13 @@ def related_words(word: str) -> set[str]:
     # Common inflection handling.
     if word.endswith("ies") and len(word) > 4:
         result.add(word[:-3] + "y")
+
     if word.endswith("s") and not word.endswith("ss") and len(word) > 3:
         result.add(word[:-1])
+
     if word.endswith("ing") and len(word) > 5:
         result.add(word[:-3])
+
     if word.endswith("ed") and len(word) > 4:
         result.add(word[:-2])
 
